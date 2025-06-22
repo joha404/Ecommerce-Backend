@@ -23,6 +23,6 @@ categoryRouter.put(
   upload.single("image"),
   categoryController.updateCategory
 );
-categoryRouter.delete("/delete/:id", categoryController.deleteCategory);
+categoryRouter.delete("/delete", categoryController.deleteCategory);
 
 export default categoryRouter;

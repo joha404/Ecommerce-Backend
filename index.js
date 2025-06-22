@@ -14,6 +14,8 @@ import productRoute from "./src/routes/productRoute.js";
 import cartRouter from "./src/routes/cartRoute.js";
 import addressRouter from "./src/routes/addressRoute.js";
 import orderRouter from "./src/routes/orderRoute.js";
+import reviewRouter from "./src/routes/reviewRoute.js";
+import authRouter from "./src/routes/authRoutes.js";
 
 const __dirname = path.resolve();
 const app = express();
@@ -50,11 +52,13 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/category", categoryRouter);
 app.use("/api/v1/product", productRoute);
 app.use("/api/v1/cart", cartRouter);
 app.use("/api/v1/address", addressRouter);
 app.use("/api/v1/order", orderRouter);
+app.use("/api/v1/review", reviewRouter);
 
 app.use((err, req, res, next) => {
   console.error("Unhandled Error:", err);

@@ -109,7 +109,7 @@ async function updateCategory(req, res) {
 }
 // Delete Category
 async function deleteCategory(req, res) {
-  const { id } = req.params;
+  const { id } = req.body;
 
   try {
     const removeCategory = await categorySchema.findByIdAndDelete(id);

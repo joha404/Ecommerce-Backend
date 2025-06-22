@@ -1,4 +1,7 @@
 import mongoose from "mongoose";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 let isConnected = false;
 
@@ -8,8 +11,15 @@ const DBConnect = async () => {
     return;
   }
 
+  if (!process.env.MONGOURL) {
+    console.error("⚠️ MONGOURL not set in environment variables.");
+    process.exit(1);
+  }
+
   try {
-    const connection = await mongoose.connect(process.env.MONGOURL);
+    const connection = await mongoose.connect(process.env.MONGOURL, {
+      serverSelectionTimeoutMS: 10000, // optional timeout
+    });
 
     isConnected = connection.connections[0].readyState === 1;
     console.log("✅ MongoDB Connected Successfully");

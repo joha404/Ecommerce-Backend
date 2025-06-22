@@ -16,6 +16,17 @@ const userSchema = new mongoose.Schema({
     enum: ["User", "Admin"],
     default: "User",
   },
+
+  // Add these for email verification
+  isVerified: { type: Boolean, default: false },
+  verificationToken: { type: String },
+  verificationTokenExpiry: { type: Date },
+  verificationCode: String,
+  verificationCodeExpiry: Date,
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 export default mongoose.model("user", userSchema);
