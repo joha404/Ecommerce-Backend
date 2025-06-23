@@ -17,16 +17,18 @@ const userSchema = new mongoose.Schema({
     default: "User",
   },
 
-  // Add these for email verification
+  // Password reset
+  resetPasswordCode: { type: String },
+  resetPasswordExpiry: { type: Date },
+
+  // Email verification
   isVerified: { type: Boolean, default: false },
+  verificationCode: { type: String },
+  verificationCodeExpiry: { type: Date },
+
+  // Optionally keep this if you're using token-based verification
   verificationToken: { type: String },
   verificationTokenExpiry: { type: Date },
-  verificationCode: String,
-  verificationCodeExpiry: Date,
-  isVerified: {
-    type: Boolean,
-    default: false,
-  },
 });
 
 export default mongoose.model("user", userSchema);

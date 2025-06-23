@@ -5,11 +5,13 @@ import {
   updateUser,
   deleteUser,
 } from "../controllers/userController.js";
+import { verifyToken } from "../middleware/verifyToken.js";
+import { isAdmin } from "../middleware/isAdmin.js";
 
 const userRouter = express.Router();
 
 // Get all users
-userRouter.get("/", getAllUsers);
+userRouter.get("/", verifyToken, isAdmin, getAllUsers);
 
 // Get single user by ID
 userRouter.get("/:userId", getSingleUser);
