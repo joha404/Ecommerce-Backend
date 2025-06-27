@@ -3,50 +3,51 @@ import Product from "../models/productModel.js";
 import Category from "../models/categoryModel.js";
 import cloudinary from "../utils/cloudinary.js";
 
-// Create Product with multiple image upload and features array
+// Helper to safely parse JSON arrays
+function safeParseArray(data) {
+  if (!data) return [];
+  if (Array.isArray(data)) return data;
+  try {
+    const parsed = JSON.parse(data);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+// Create product
 async function createProduct(req, res) {
   try {
-    console.log("req.files:", req.files);
-    console.log("req.body:", req.body);
-
-    let { name, description, price, oldPrice, stock, categoryName, features } =
-      req.body;
-    price = parseFloat(price);
-    if (features) {
-      try {
-        features = JSON.parse(features);
-      } catch (err) {
-        console.warn("Invalid features format. Defaulting to empty array.");
-        features = [];
-      }
-    } else {
-      features = [];
-    }
+    let {
+      name,
+      description,
+      price,
+      oldPrice,
+      discount,
+      stock,
+      stockCount,
+      brand,
+      categoryName,
+      features,
+    } = req.body;
 
     if (!name || !description || !price || !categoryName) {
-      return res
-        .status(400)
-        .json({ message: "All required fields must be filled" });
+      return res.status(400).json({ message: "Required fields missing" });
     }
+
+    price = parseFloat(price);
+    oldPrice = oldPrice ? parseFloat(oldPrice) : null;
+    discount = discount ? parseFloat(discount) : 0;
+    stock = stock === "true" || stock === true;
+    stockCount = stockCount ? parseInt(stockCount) : 0;
 
     if (isNaN(price) || price <= 0) {
       return res
         .status(400)
-        .json({ message: "Price must be a valid positive number" });
+        .json({ message: "Price must be a positive number" });
     }
 
-    oldPrice = oldPrice ? parseFloat(oldPrice) : null;
-    stock = stock === "true" || stock === true;
-
-    // Parse features if sent as JSON string (optional)
-    if (features && typeof features === "string") {
-      try {
-        features = JSON.parse(features);
-        if (!Array.isArray(features)) features = [];
-      } catch {
-        features = [];
-      }
-    }
+    features = safeParseArray(features);
 
     // Find or create category
     let category = await Category.findOne({ name: categoryName });
@@ -57,93 +58,89 @@ async function createProduct(req, res) {
     if (!req.files || !req.files.length) {
       return res
         .status(400)
-        .json({ message: "At least one image file is required" });
+        .json({ message: "At least one image is required" });
     }
 
-    // Upload multiple images to Cloudinary
-    const uploadPromises = req.files.map((file) =>
-      cloudinary.uploader.upload(file.path, { folder: "products" })
+    // Upload images to Cloudinary
+    const uploadResults = await Promise.all(
+      req.files.map((file) =>
+        cloudinary.uploader.upload(file.path, { folder: "products" })
+      )
     );
-    const uploadResults = await Promise.all(uploadPromises);
+    req.files.forEach((file) => fs.unlinkSync(file.path)); // delete temp files
 
-    // Remove temp files
-    req.files.forEach((file) => fs.unlinkSync(file.path));
-
-    // Extract URLs
-    const images = uploadResults.map((result) => result.secure_url);
+    const images = uploadResults.map((r) => r.secure_url);
 
     const newProduct = await Product.create({
       name,
       description,
       price,
       oldPrice,
+      discount,
       stock,
+      stockCount,
+      brand,
       images,
       features,
       category: category._id,
     });
 
-    res.status(201).json({
-      message: "Product created successfully",
-      product: newProduct,
-    });
+    res.status(201).json({ message: "Product created", product: newProduct });
   } catch (error) {
-    console.error("Error creating product:", error);
-    res
-      .status(500)
-      .json({ message: "Error creating product", error: error.message });
+    console.error("Create product error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 }
 
-// Get all products with category names
+// Get all products
 async function allProducts(req, res) {
   try {
     const products = await Product.find().populate("category", "name");
     res.status(200).json(products);
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error fetching products", error: error.message });
+    console.error("Fetch all products error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 }
 
-// Get a single product by ID
+// Get single product by ID
 async function singleProduct(req, res) {
-  const { id } = req.params;
-
   try {
-    const product = await Product.findById(id).populate("category", "name");
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
+    const product = await Product.findById(req.params.id).populate(
+      "category",
+      "name"
+    );
+    if (!product) return res.status(404).json({ message: "Product not found" });
 
-    res
-      .status(200)
-      .json({ message: "Product retrieved successfully", product });
+    res.status(200).json(product);
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error retrieving product", error: error.message });
+    console.error("Fetch single product error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 }
 
-// Update a product, support optional new images and features
+// Update product
 async function updateProduct(req, res) {
-  const { id } = req.params;
-  const updateData = { ...req.body };
-
   try {
-    // Parse features if sent as JSON string
+    const { id } = req.params;
+    const updateData = { ...req.body };
+
+    // Convert types
+    if (updateData.price) updateData.price = parseFloat(updateData.price);
+    if (updateData.oldPrice)
+      updateData.oldPrice = parseFloat(updateData.oldPrice);
+    if (updateData.discount)
+      updateData.discount = parseFloat(updateData.discount);
+    if (updateData.stockCount)
+      updateData.stockCount = parseInt(updateData.stockCount);
+    if (updateData.stock) updateData.stock = updateData.stock === "true";
+
+    // Parse arrays
     if (updateData.features && typeof updateData.features === "string") {
-      try {
-        updateData.features = JSON.parse(updateData.features);
-        if (!Array.isArray(updateData.features)) updateData.features = [];
-      } catch {
-        updateData.features = [];
-      }
+      updateData.features = safeParseArray(updateData.features);
     }
 
-    // Handle categoryName update
+    // Handle category change
     if (updateData.categoryName) {
       let category = await Category.findOne({ name: updateData.categoryName });
       if (!category) {
@@ -153,12 +150,13 @@ async function updateProduct(req, res) {
       delete updateData.categoryName;
     }
 
-    // If new images uploaded, upload them and update images array
+    // Handle new images upload
     if (req.files && req.files.length) {
-      const uploadPromises = req.files.map((file) =>
-        cloudinary.uploader.upload(file.path, { folder: "products" })
+      const uploadResults = await Promise.all(
+        req.files.map((file) =>
+          cloudinary.uploader.upload(file.path, { folder: "products" })
+        )
       );
-      const uploadResults = await Promise.all(uploadPromises);
       req.files.forEach((file) => fs.unlinkSync(file.path));
       updateData.images = uploadResults.map((r) => r.secure_url);
     }
@@ -167,67 +165,90 @@ async function updateProduct(req, res) {
       new: true,
     }).populate("category", "name");
 
-    if (!updatedProduct) {
+    if (!updatedProduct)
       return res.status(404).json({ message: "Product not found" });
-    }
 
-    res.status(200).json({
-      message: "Product updated successfully",
-      product: updatedProduct,
-    });
-  } catch (error) {
     res
-      .status(500)
-      .json({ message: "Error updating product", error: error.message });
+      .status(200)
+      .json({ message: "Product updated", product: updatedProduct });
+  } catch (error) {
+    console.error("Update product error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 }
 
-// Delete a product
+// Delete product
 async function deleteProduct(req, res) {
-  const { id } = req.params;
-
   try {
-    const deletedProduct = await Product.findByIdAndDelete(id);
-
-    if (!deletedProduct) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    res.status(200).json({ message: "Product deleted successfully" });
+    const deleted = await Product.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ message: "Product not found" });
+    res.status(200).json({ message: "Product deleted" });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error deleting product", error: error.message });
+    console.error("Delete product error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 }
 
-// Search products by name or description (case-insensitive)
+// Search products
 async function searchProducts(req, res) {
   try {
     const { query } = req.query;
-    if (!query) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Query is required" });
-    }
+    if (!query)
+      return res.status(400).json({ message: "Query param required" });
 
     const products = await Product.find({
       $or: [
         { name: { $regex: query, $options: "i" } },
         { description: { $regex: query, $options: "i" } },
+        { brand: { $regex: query, $options: "i" } },
+        { tags: { $in: [new RegExp(query, "i")] } },
       ],
     }).populate("category", "name");
+
+    if (!products.length)
+      return res.status(404).json({ message: "No products found" });
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Search products error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+}
+// Search products by category name (query param: ?category=CategoryName)
+async function searchByCategory(req, res) {
+  try {
+    const { category } = req.query;
+    if (!category) {
+      return res
+        .status(400)
+        .json({ message: "Category query param is required" });
+    }
+
+    // Find category by name (case-insensitive)
+    const categoryDoc = await Category.findOne({
+      name: { $regex: `^${category}$`, $options: "i" },
+    });
+
+    if (!categoryDoc) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    // Find products in this category
+    const products = await Product.find({ category: categoryDoc._id }).populate(
+      "category",
+      "name"
+    );
 
     if (products.length === 0) {
       return res
         .status(404)
-        .json({ success: false, message: "No products found" });
+        .json({ message: "No products found for this category" });
     }
 
-    res.status(200).json({ success: true, data: products });
-  } catch (err) {
-    console.error("Error during search:", err);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Search by category error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 }
 
@@ -237,5 +258,6 @@ export default {
   singleProduct,
   updateProduct,
   deleteProduct,
+  searchByCategory,
   searchProducts,
 };

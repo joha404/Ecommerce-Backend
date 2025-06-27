@@ -26,7 +26,13 @@ productRoute.post(
 // Get all products
 productRoute.get("/all", productController.allProducts);
 
-// Get single product by ID
+// Search products by query param ?query=
+productRoute.get("/search", productController.searchProducts);
+
+// Search by category
+productRoute.get("/search-category", productController.searchByCategory);
+
+// Get single product by ID (this must be after all specific routes)
 productRoute.get("/:id", productController.singleProduct);
 
 // Update product by ID (optional multiple new images)
@@ -38,8 +44,5 @@ productRoute.put(
 
 // Delete product by ID
 productRoute.delete("/delete/:id", productController.deleteProduct);
-
-// Search products by query param ?query=
-productRoute.get("/search", productController.searchProducts);
 
 export default productRoute;
