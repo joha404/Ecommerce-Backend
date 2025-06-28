@@ -17,6 +17,7 @@ import orderRouter from "./src/routes/orderRoute.js";
 import reviewRouter from "./src/routes/reviewRoute.js";
 import authRouter from "./src/routes/authRoutes.js";
 import adminRouter from "./src/routes/adminRoutes.js";
+import profileRouter from "./src/routes/profileRoutes.js";
 
 const __dirname = path.resolve();
 const app = express();
@@ -61,6 +62,7 @@ app.use("/api/v1/cart", cartRouter);
 app.use("/api/v1/address", addressRouter);
 app.use("/api/v1/order", orderRouter);
 app.use("/api/v1/review", reviewRouter);
+app.use("/api/v1/profile", profileRouter);
 
 app.use((err, req, res, next) => {
   console.error("Unhandled Error:", err);
