@@ -68,10 +68,15 @@ export async function verifyEmailCode(req, res) {
 
     const user = await userModel.findOne({ email });
 
+    console.log("User:", user);
+    console.log("Stored code:", user?.verificationCode);
+    console.log("Provided code:", verificationCode);
+    console.log("Code Expiry:", user?.verificationCodeExpiry);
+    console.log("Now:", Date.now());
+
     if (
       !user ||
-      user.isVerified ||
-      user.verificationCode !== verificationCode ||
+      String(user.verificationCode) !== String(verificationCode) ||
       user.verificationCodeExpiry < Date.now()
     ) {
       return res

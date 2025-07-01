@@ -11,7 +11,7 @@ import { isAdmin } from "../middleware/isAdmin.js";
 const userRouter = express.Router();
 
 // Get all users
-userRouter.get("/", verifyToken, isAdmin, getAllUsers);
+userRouter.get("/", getAllUsers);
 
 // Get single user by ID
 userRouter.get("/:userId", getSingleUser);
