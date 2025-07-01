@@ -1,6 +1,5 @@
 import userModel from "../models/userModel.js";
-import bcrypt from "bcrypt";
-import crypto from "crypto";
+import bcrypt from "bcryptjs";
 import { sendEmailMessage } from "../utils/sendEmailMessage.js";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
