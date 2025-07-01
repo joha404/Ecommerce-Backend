@@ -214,9 +214,8 @@ export async function loginUser(req, res) {
     //   return res.status(403).json({ message: "Please verify your email first." });
     // }
 
-    // Generate JWT token
     const token = jwt.sign(
-      { id: user._id, role: user.role },
+      { _id: user._id, role: user.role }, // use `_id` here, not `id`
       process.env.JWT_SECRET_KEY,
       { expiresIn: "7d" }
     );

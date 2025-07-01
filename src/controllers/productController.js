@@ -3,25 +3,20 @@ import Product from "../models/productModel.js";
 import Category from "../models/categoryModel.js";
 import cloudinary from "../utils/cloudinary.js";
 
-// Create Product with multiple image upload and features array
 async function createProduct(req, res) {
   try {
-    console.log("req.files:", req.files);
-    console.log("req.body:", req.body);
-
     let { name, description, price, oldPrice, stock, categoryName, features } =
       req.body;
-    price = parseFloat(price);
-    if (features) {
-      try {
-        features = JSON.parse(features);
-      } catch (err) {
-        console.warn("Invalid features format. Defaulting to empty array.");
-        features = [];
-      }
-    } else {
+
+    // Parse features once here
+    try {
+      features = typeof features === "string" ? JSON.parse(features) : features;
+      if (!Array.isArray(features)) features = [];
+    } catch {
       features = [];
     }
+
+    price = parseFloat(price);
 
     if (!name || !description || !price || !categoryName) {
       return res
@@ -37,16 +32,6 @@ async function createProduct(req, res) {
 
     oldPrice = oldPrice ? parseFloat(oldPrice) : null;
     stock = stock === "true" || stock === true;
-
-    // Parse features if sent as JSON string (optional)
-    if (features && typeof features === "string") {
-      try {
-        features = JSON.parse(features);
-        if (!Array.isArray(features)) features = [];
-      } catch {
-        features = [];
-      }
-    }
 
     // Find or create category
     let category = await Category.findOne({ name: categoryName });
