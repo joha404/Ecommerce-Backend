@@ -8,16 +8,16 @@ import dotenv from "dotenv";
 import serverless from "serverless-http";
 dotenv.config();
 
-import DBConnect from "./src/config/db.js";
-import userRoutes from "./src/routes/userRoute.js";
-import categoryRouter from "./src/routes/categoryRoute.js";
-import productRoute from "./src/routes/productRoute.js";
-import cartRouter from "./src/routes/cartRoute.js";
-import addressRouter from "./src/routes/addressRoute.js";
-import orderRouter from "./src/routes/orderRoute.js";
-import reviewRouter from "./src/routes/reviewRoute.js";
-import authRouter from "./src/routes/authRoutes.js";
-import adminRouter from "./src/routes/adminRoutes.js";
+import DBConnect from "../src/config/db.js";
+import userRoutes from "../src/routes/userRoute.js";
+import categoryRouter from "../src/routes/categoryRoute.js";
+import productRoute from "../src/routes/productRoute.js";
+import cartRouter from "../src/routes/cartRoute.js";
+import addressRouter from "../src/routes/addressRoute.js";
+import orderRouter from "../src/routes/orderRoute.js";
+import reviewRouter from "../src/routes/reviewRoute.js";
+import authRouter from "../src/routes/authRoutes.js";
+import adminRouter from "../src/routes/adminRoutes.js";
 
 const __dirname = path.resolve();
 const app = express();
