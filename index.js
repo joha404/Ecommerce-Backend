@@ -27,7 +27,10 @@ DBConnect().catch((err) => {
   process.exit(1);
 });
 
-const allowedOrigins = ["http://localhost:5174", "http://localhost:5173"];
+const allowedOrigins = [
+  "https://ecom-front-end-gsal.vercel.app",
+  "http://localhost:5173",
+];
 app.use(
   cors({
     origin: function (origin, callback) {
