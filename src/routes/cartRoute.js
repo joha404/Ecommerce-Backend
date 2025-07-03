@@ -10,7 +10,7 @@ import {
 const cartRouter = express.Router();
 
 cartRouter.post("/add", addToCart);
-cartRouter.get("/", getCart);
+cartRouter.get("/:userId", getCart);
 cartRouter.put("/update", updateCartItem);
 cartRouter.delete("/remove", removeCartItem);
 cartRouter.delete("/clear", clearCart);

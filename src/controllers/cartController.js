@@ -51,7 +51,7 @@ export async function addToCart(req, res) {
 
 // Get Cart by User
 export async function getCart(req, res) {
-  const { userId } = req.body;
+  const { userId } = req.params;
 
   try {
     const cart = await Cart.findOne({ userId }).populate(
@@ -59,13 +59,17 @@ export async function getCart(req, res) {
       "name price image"
     );
 
-    if (!cart) return res.status(404).json({ message: "Cart not found" });
+    if (!cart) {
+      return res.status(404).json({ message: "Cart not found" });
+    }
 
     res.status(200).json(cart);
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error fetching cart", error: error.message });
+    console.error("Error fetching cart:", error);
+    res.status(500).json({
+      message: "Error fetching cart",
+      error: error.message,
+    });
   }
 }
 
