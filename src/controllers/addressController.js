@@ -56,7 +56,7 @@ export async function addAddress(req, res) {
 
 // Get all addresses for a user
 export async function getUserAddresses(req, res) {
-  const { userId } = req.body;
+  const { userId } = req.params;
 
   try {
     const addresses = await Address.find({ user: userId });

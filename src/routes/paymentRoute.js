@@ -1,9 +1,17 @@
+// routes/payment.js
 import express from "express";
-import { handleSuccess, handleFail } from "../payment/sslcommerz.js";
+import { initiatePayment } from "../payment/initiatePayment.js";
+import { handleSuccess, handleFail } from "../payment/paymentResponse.js";
 
-const paymentRoute = express.Router();
+const paymentRouter = express.Router();
 
-paymentRoute.post("/success/:tran_id", handleSuccess);
-paymentRoute.post("/fail", handleFail);
+paymentRouter.post("/initiate", initiatePayment);
+paymentRouter.get("/success/:tran_id", handleSuccess);
+paymentRouter.get("/fail", handleFail);
+paymentRouter.get("/cancel", handleFail);
+paymentRouter.post("/ipn", (req, res) => {
+  console.log("IPN received:", req.body);
+  res.status(200).send("IPN acknowledged");
+});
 
-export default paymentRoute;
+export default paymentRouter;
