@@ -96,23 +96,16 @@ export async function getSingleOrder(req, res) {
 }
 
 // get order by userId
-export const getOrdersByEmail = async (req, res) => {
+export const getOrdersByUserId = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { userId } = req.params;
 
-    if (!email) {
-      return res.status(400).json({ message: "Email is required" });
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
     }
 
-    // Find user by email
-    const user = await User.findOne({ email: email.toLowerCase() });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Find orders by user._id (userInfo field)
-    const orders = await Order.find({ userInfo: user._id }).sort({
+    // Validate and find orders by userId (userInfo field)
+    const orders = await Order.find({ userInfo: userId }).sort({
       createdAt: -1,
     });
 
@@ -125,7 +118,7 @@ export const getOrdersByEmail = async (req, res) => {
       orders,
     });
   } catch (error) {
-    console.error("Get orders by email error:", error);
+    console.error("Get orders by userId error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

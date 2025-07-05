@@ -26,7 +26,7 @@ export async function handleSuccess(req, res) {
 
     const successPagePath = path.join(
       __dirname,
-      "../public/payment-success.html"
+      "../public/payment/payment-success.html"
     );
 
     if (!fs.existsSync(successPagePath)) {

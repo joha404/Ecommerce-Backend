@@ -6,7 +6,7 @@ import {
   updateOrderStatus,
   cancelOrder,
   deleteOrder,
-  getOrdersByEmail,
+  getOrdersByUserId,
 } from "../controllers/orderController.js";
 
 const orderRouter = express.Router();
@@ -22,7 +22,7 @@ orderRouter.get("/:id", getSingleOrder);
 
 // Get a single order by user Email
 
-orderRouter.get("/orders/:userId", getOrdersByEmail);
+orderRouter.get("/user/:userId", getOrdersByUserId);
 
 // Update order status, deliveryStatus, or paidStatus
 orderRouter.put("/status/:id", updateOrderStatus);
