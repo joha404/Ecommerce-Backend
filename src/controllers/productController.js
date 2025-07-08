@@ -111,6 +111,28 @@ async function singleProduct(req, res) {
       .json({ message: "Error retrieving product", error: error.message });
   }
 }
+//  Get Product By CategoryId
+async function getProductsByCategoryId(req, res) {
+  const category = req.params.id;
+
+  if (!category) {
+    return res.status(400).json({ message: "Category ID is required" });
+  }
+
+  try {
+    const products = await Product.find({ category }).populate(
+      "category",
+      "name"
+    );
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Error retrieving products by category:", error);
+    res.status(500).json({
+      message: "Error retrieving product",
+      error: error.message,
+    });
+  }
+}
 
 // Update a product, support optional new images and features
 async function updateProduct(req, res) {
@@ -220,6 +242,7 @@ export default {
   createProduct,
   allProducts,
   singleProduct,
+  getProductsByCategoryId,
   updateProduct,
   deleteProduct,
   searchProducts,

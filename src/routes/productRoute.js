@@ -26,7 +26,13 @@ productRoute.post(
 // Get all products
 productRoute.get("/all", productController.allProducts);
 
-// Get single product by ID
+// Search products by query param ?query=
+productRoute.get("/search", productController.searchProducts);
+
+// Get products by category ID (make sure your controller uses req.params.id)
+productRoute.get("/category/:id", productController.getProductsByCategoryId);
+
+// Get single product by ID (dynamic route — put LAST)
 productRoute.get("/:id", productController.singleProduct);
 
 // Update product by ID (optional multiple new images)
@@ -38,8 +44,5 @@ productRoute.put(
 
 // Delete product by ID
 productRoute.delete("/delete/:id", productController.deleteProduct);
-
-// Search products by query param ?query=
-productRoute.get("/search", productController.searchProducts);
 
 export default productRoute;
