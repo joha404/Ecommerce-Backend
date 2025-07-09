@@ -5,8 +5,16 @@ import cloudinary from "../utils/cloudinary.js";
 
 async function createProduct(req, res) {
   try {
-    let { name, description, price, oldPrice, stock, categoryName, features } =
-      req.body;
+    let {
+      name,
+      description,
+      discount,
+      price,
+      oldPrice,
+      stock,
+      categoryName,
+      features,
+    } = req.body;
 
     // Parse features once here
     try {
@@ -65,6 +73,7 @@ async function createProduct(req, res) {
       stock,
       images,
       features,
+      discount,
       category: category._id,
     });
 
